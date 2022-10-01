@@ -1,5 +1,3 @@
-use std::ops::Mul;
-
 pub struct ByteArray {
     pub data: Vec<u8>,
     offset: usize,

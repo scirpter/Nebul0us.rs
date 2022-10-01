@@ -14,4 +14,9 @@ pub mod enums {
 }
 
 pub mod netrng;
-pub mod packets;
+pub mod packets {
+    mod packet;
+    mod session_stats;
+
+    pub use {packet::Packet, session_stats::SessionStats};
+}
