@@ -1,19 +1,16 @@
 #[allow(non_camel_case_types)]
 pub mod enums {
     mod base_event;
-    pub use base_event::BaseEvent;
-
     mod clan_rank;
-    pub use clan_rank::ClanRank;
-
     mod click_type;
-    pub use click_type::ClickType;
-
     mod color_cycle;
-    pub use color_cycle::ColorCycle;
-
     mod connection_state;
-    pub use connection_state::ConnectionState;
+    mod packet_id;
+
+    pub use {
+        base_event::BaseEvent, clan_rank::ClanRank, click_type::ClickType, color_cycle::ColorCycle,
+        connection_state::ConnectionState, packet_id::PacketId,
+    };
 }
 
 pub mod netrng;
