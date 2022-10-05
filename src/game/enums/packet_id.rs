@@ -1,4 +1,5 @@
 pub enum PacketId {
+    // TODO: Add struct to required packets
     INVALID,
     CONNECT_RESULT_2,
     CONTROL,

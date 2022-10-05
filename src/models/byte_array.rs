@@ -21,7 +21,7 @@ impl ByteArray {
     pub fn hex_data(&self) -> String {
         let mut hex_data = String::new();
         for byte in &self.data {
-            hex_data.push_str(&format!("{:02x}", byte).to_uppercase());
+            hex_data.push_str(&format!("{:02X}", byte));
         }
         hex_data
     }

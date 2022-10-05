@@ -1,19 +1,7 @@
 use crate::models;
 use java_rand::Random as JavaRNG;
 
-#[derive(Clone, Copy)]
-struct K2 {
-    xlength: usize,
-    xrandint: i32,
-}
-
-impl K2 {
-    fn new(xlength: usize, xrandint: i32) -> K2 {
-        K2 { xlength, xrandint }
-    }
-}
-
-#[test]
+#[cfg(test)]
 /// Tests if the en-/decryption is working properly
 fn test_encrypted_eq_decrypted() {
     let encrypted_hex = "760000000047599ABB0073D43E00000077FF000000FFFF0000D100FF00FF0000039183007777000000FFFF78FFE600FF000000770000FBFFFF000000000000930900301B770066E100000500FF0004A30000D000FFA303010000A10000ED";
@@ -26,6 +14,18 @@ fn test_encrypted_eq_decrypted() {
     let reencrypted = encrypt(decrypted, 0x47599ABB0073D43E);
     println!("Reencrypted: {}", reencrypted.hex_data());
     assert_eq!(reencrypted.hex_data(), encrypted_hex);
+}
+
+#[derive(Clone, Copy)]
+struct K2 {
+    xlength: usize,
+    xrandint: i32,
+}
+
+impl K2 {
+    fn new(xlength: usize, xrandint: i32) -> K2 {
+        K2 { xlength, xrandint }
+    }
 }
 
 pub fn encrypt(mut b_arr: models::ByteArray, key: u64) -> models::ByteArray {

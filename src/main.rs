@@ -1,7 +1,10 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
+extern crate tokio;
+
 mod game;
 mod models;
 
-fn main() {}
+#[tokio::main]
+async fn main() {}

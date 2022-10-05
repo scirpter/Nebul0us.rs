@@ -12,9 +12,9 @@ struct Control {
     drop_count: u32,
 }
 
-struct BlobData {
-    name: String,
-    ticket: String,
+struct PlayerData<'a> {
+    name: &'a str,
+    ticket: &'a str,
     skin_index: u16,
 }
 
@@ -33,7 +33,7 @@ struct Net {
     rnd_token2: u32,
 }
 
-pub struct Bot {
+pub struct Bot<'a> {
     control: Control,
-    blob_data: BlobData,
+    player_data: PlayerData<'a>,
 }
