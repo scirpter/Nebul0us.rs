@@ -14,7 +14,7 @@ pub mod enums {
 
     pub use {
         base_event::BaseEvent, clan_rank::ClanRank, click_type::ClickType, color_cycle::ColorCycle,
-        connection_state::ConnectionState, difficulty::Difficulty, game_mode::GameMode,
+        connection_state::ConnectionState, difficulty::Difficulty, game_mode::GameMode, packet::*,
         server::Server, split_multiplier::SplitMultiplier, world_size::WorldSize,
     };
 }

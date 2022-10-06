@@ -1,4 +1,4 @@
-enum Packet {
+pub enum Packet {
     INVALID,
     CONNECT_RESULT_2,
     CONTROL,

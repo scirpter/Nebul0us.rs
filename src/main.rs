@@ -7,10 +7,12 @@ mod game;
 mod interfaces;
 mod models;
 
+use game::packets;
 use models::pretty_print as print;
 
 #[tokio::main]
 async fn main() {
     print::clear_console();
+
     loop {}
 }

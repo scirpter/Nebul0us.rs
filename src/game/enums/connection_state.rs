@@ -3,3 +3,9 @@ pub enum ConnectionState {
     CONNECTING,
     CONNECTED,
 }
+
+impl Default for ConnectionState {
+    fn default() -> Self {
+        ConnectionState::DISCONNECTED
+    }
+}

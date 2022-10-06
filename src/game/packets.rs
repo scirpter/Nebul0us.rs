@@ -1,3 +1,6 @@
+use crate::game::enums::Packet;
+use crate::models;
+
 pub struct ConnectResult2 {}
 
 pub struct Control {}
@@ -10,7 +13,28 @@ pub struct StartGameInternal {}
 
 pub struct ConnectRequest {}
 
-pub struct Disconnect {}
+pub struct Disconnect<'a> {
+    id: Packet,
+    bot: models::Bot<'a>,
+}
+
+impl<'a> Disconnect<'a> {
+    pub fn new(bot: models::Bot) -> Disconnect {
+        Disconnect {
+            id: Packet::DISCONNECT,
+            bot,
+        }
+    }
+
+    pub fn write(&self) -> Vec<u8> {
+        let mut b_arr = models::ByteArray::new(None);
+        b_arr.write_byte(self.id as u8);
+        b_arr.write_int(self.bot.net.cr2_token1.unwrap_or_default());
+        b_arr.write_int(self.bot.net.cr2_token2.unwrap_or_default());
+        b_arr.write_int(self.bot.net.rng_token1);
+        return b_arr.data;
+    }
+}
 
 pub struct GameChatMessage {}
 
@@ -206,7 +230,21 @@ pub struct GroupChatStatus {}
 
 pub struct GroupChatMessage {}
 
-pub struct SessionStats {}
+pub struct SessionStats<'a> {
+    bot: models::Bot<'a>,
+    data: Vec<u8>,
+}
+
+impl<'a> SessionStats<'a> {
+    pub fn new(bot: models::Bot, data: Vec<u8>) -> SessionStats {
+        SessionStats { bot, data }
+    }
+
+    pub fn parse(&self) {
+        // TODO: Add bot event handler
+        todo!()
+    }
+}
 
 pub struct Accolade {}
 
