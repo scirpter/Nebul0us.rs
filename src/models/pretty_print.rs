@@ -28,7 +28,6 @@ pub fn clear_console() {
             .status()
             .expect("failed to execute process");
     } else {
-        // run "clear" command via bash if on linux
         Command::new("bash")
             .args(&["-c", "clear"])
             .status()

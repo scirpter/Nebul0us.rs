@@ -7,15 +7,18 @@ pub mod enums {
     mod connection_state;
     mod difficulty;
     mod game_mode;
+    mod name_font;
     mod packet;
     mod server;
+    mod skin;
     mod split_multiplier;
     mod world_size;
 
     pub use {
         base_event::BaseEvent, clan_rank::ClanRank, click_type::ClickType, color_cycle::ColorCycle,
-        connection_state::ConnectionState, difficulty::Difficulty, game_mode::GameMode, packet::*,
-        server::Server, split_multiplier::SplitMultiplier, world_size::WorldSize,
+        connection_state::ConnectionState, difficulty::Difficulty, game_mode::GameMode,
+        name_font::NameFont, packet::*, server::Server, skin::Skin,
+        split_multiplier::SplitMultiplier, world_size::WorldSize,
     };
 }
 

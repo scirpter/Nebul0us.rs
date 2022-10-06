@@ -7,3 +7,17 @@ pub enum ColorCycle {
     RAINBOW_VERTICAL_SLOW,
     RAINBOW_VERTICAL_FAST,
 }
+
+impl Default for ColorCycle {
+    fn default() -> Self {
+        ColorCycle::NONE
+    }
+}
+
+impl Copy for ColorCycle {}
+
+impl Clone for ColorCycle {
+    fn clone(&self) -> Self {
+        *self
+    }
+}

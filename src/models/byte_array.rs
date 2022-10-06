@@ -26,27 +26,31 @@ impl ByteArray {
         hex_data
     }
 
-    pub fn write_bool(&mut self, value: bool) {
+    pub fn write_bool(&mut self, value: bool) -> &mut Self {
         self.data.push(if value { 1 } else { 0 });
+        self
     }
 
-    pub fn write_byte(&mut self, value: u8) {
+    pub fn write_byte(&mut self, value: u8) -> &mut Self {
         self.data.push(value);
+        self
     }
 
-    pub fn write_short(&mut self, value: u16) {
+    pub fn write_short(&mut self, value: u16) -> &mut Self {
         self.data.push((value >> 8) as u8);
         self.data.push(value as u8);
+        self
     }
 
-    pub fn write_int(&mut self, value: u32) {
+    pub fn write_int(&mut self, value: u32) -> &mut Self {
         self.data.push((value >> 24) as u8);
         self.data.push((value >> 16) as u8);
         self.data.push((value >> 8) as u8);
         self.data.push(value as u8);
+        self
     }
 
-    pub fn write_long(&mut self, value: u64) {
+    pub fn write_long(&mut self, value: u64) -> &mut Self {
         self.data.push((value >> 56) as u8);
         self.data.push((value >> 48) as u8);
         self.data.push((value >> 40) as u8);
@@ -55,16 +59,18 @@ impl ByteArray {
         self.data.push((value >> 16) as u8);
         self.data.push((value >> 8) as u8);
         self.data.push(value as u8);
+        self
     }
 
-    pub fn write_utf8(&mut self, value: &str) {
+    pub fn write_utf8(&mut self, value: &str) -> &mut Self {
         self.write_short(value.len() as u16);
         for byte in value.as_bytes() {
             self.data.push(*byte);
         }
+        self
     }
 
-    pub fn write_hex(&mut self, value: &str) {
+    pub fn write_hex(&mut self, value: &str) -> &mut Self {
         let mut hex_data = String::new();
         for byte in value.as_bytes() {
             if byte.is_ascii_hexdigit() {
@@ -87,12 +93,12 @@ impl ByteArray {
         }
 
         self.data.append(&mut bytes);
+        self
     }
 
-    pub fn write_raw(&mut self, value: &[u8]) {
-        for byte in value {
-            self.data.push(*byte);
-        }
+    pub fn write_raw(&mut self, value: &[u8]) -> &mut Self {
+        self.data.extend_from_slice(value);
+        self
     }
 
     pub fn read_utf8(&mut self) -> String {

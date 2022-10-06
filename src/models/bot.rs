@@ -17,8 +17,13 @@ pub struct Control {
 #[derive(Default)]
 pub struct PlayerData<'a> {
     pub name: &'a str,
-    pub ticket: &'a str,
-    pub skin_index: Option<u16>,
+    pub ticket: Option<&'a str>,
+    pub skin: Option<enums::Skin>,
+    pub rainbow_cycle: Option<enums::ColorCycle>,
+    pub name_font: Option<enums::NameFont>,
+    pub halo: Option<u8>,
+    pub hat: Option<u8>,
+    pub particle: Option<u8>,
 }
 
 #[derive(Default)]
@@ -44,7 +49,7 @@ pub struct Bot<'a> {
 }
 
 impl<'a> Bot<'a> {
-    pub fn new(name: &'a str, ticket: &'a str) -> Bot<'a> {
+    pub fn new(name: &'a str, ticket: Option<&'a str>) -> Bot<'a> {
         let mut rng = rand::thread_rng();
 
         Bot {
@@ -55,7 +60,6 @@ impl<'a> Bot<'a> {
                 ..Default::default()
             },
             net: Net {
-                // random int from 0 to 0xffffffff
                 rng_token1: rng.gen::<u32>(),
                 rng_token2: rng.gen::<u32>(),
                 ..Default::default()
