@@ -9,6 +9,7 @@ pub mod enums {
     mod game_mode;
     mod name_font;
     mod packet;
+    mod player_visibility;
     mod server;
     mod skin;
     mod split_multiplier;
@@ -17,8 +18,8 @@ pub mod enums {
     pub use {
         base_event::BaseEvent, clan_rank::ClanRank, click_type::ClickType, color_cycle::ColorCycle,
         connection_state::ConnectionState, difficulty::Difficulty, game_mode::GameMode,
-        name_font::NameFont, packet::*, server::Server, skin::Skin,
-        split_multiplier::SplitMultiplier, world_size::WorldSize,
+        name_font::NameFont, packet::*, player_visibility::PlayerVisibility, server::Server,
+        skin::Skin, split_multiplier::SplitMultiplier, world_size::WorldSize,
     };
 }
 

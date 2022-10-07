@@ -1,4 +1,4 @@
-use crate::models;
+use crate::net;
 use java_rand::Random as JavaRNG;
 
 #[cfg(test)]
@@ -6,7 +6,7 @@ use java_rand::Random as JavaRNG;
 fn test_encrypted_eq_decrypted() {
     let encrypted_hex = "760000000047599ABB0073D43E00000077FF000000FFFF0000D100FF00FF0000039183007777000000FFFF78FFE600FF000000770000FBFFFF000000000000930900301B770066E100000500FF0004A30000D000FFA303010000A10000ED";
 
-    let mut encrypted_b_arr = models::ByteArray::new(None);
+    let mut encrypted_b_arr = net::ByteArray::new(None);
     encrypted_b_arr.write_hex(encrypted_hex);
 
     let decrypted = decrypt(encrypted_b_arr);
@@ -28,7 +28,7 @@ impl K2 {
     }
 }
 
-pub fn encrypt(mut b_arr: models::ByteArray, key: u64) -> models::ByteArray {
+pub fn encrypt(mut b_arr: net::ByteArray, key: u64) -> net::ByteArray {
     let mut length = b_arr.data.len() - 13;
     let mut array_list: Vec<K2> = vec![];
     let mut random = JavaRNG::new(key);
@@ -51,7 +51,7 @@ pub fn encrypt(mut b_arr: models::ByteArray, key: u64) -> models::ByteArray {
     return b_arr;
 }
 
-pub fn decrypt(mut b_arr: models::ByteArray) -> models::ByteArray {
+pub fn decrypt(mut b_arr: net::ByteArray) -> net::ByteArray {
     let mut length = b_arr.data.len() - 13;
     let mut array_list: Vec<K2> = vec![];
     b_arr.read_byte(); // skip: packet id

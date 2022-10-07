@@ -17,18 +17,20 @@ pub struct Control {
 #[derive(Default)]
 pub struct PlayerData<'a> {
     pub name: &'a str,
-    pub ticket: Option<&'a str>,
+    pub ticket: &'a str,
     pub skin: Option<enums::Skin>,
     pub rainbow_cycle: Option<enums::ColorCycle>,
     pub name_font: Option<enums::NameFont>,
     pub halo: Option<u8>,
     pub hat: Option<u8>,
     pub particle: Option<u8>,
+    pub visibility: Option<enums::PlayerVisibility>,
+    pub eject_skin: Option<u8>,
 }
 
 #[derive(Default)]
 pub struct Net {
-    connection_state: Option<enums::ConnectionState>,
+    pub connection_state: Option<enums::ConnectionState>,
 
     // Two tokens received from CONNECT_RESULT_2 (0x01).
     // Used to identify the client server-side
@@ -56,7 +58,7 @@ impl<'a> Bot<'a> {
             control: Control::default(),
             player_data: PlayerData {
                 name,
-                ticket,
+                ticket: ticket.unwrap_or(",-"),
                 ..Default::default()
             },
             net: Net {

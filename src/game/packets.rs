@@ -1,5 +1,10 @@
-use crate::game::enums::Packet;
-use crate::models;
+use crate::game::enums;
+use crate::{models, net};
+use chrono;
+use java_rand::Random as JavaRNG;
+use rand::Rng;
+
+use super::rng_crypt;
 
 pub struct ConnectResult2 {}
 
@@ -11,6 +16,7 @@ pub struct InvalidateClient {}
 
 pub struct StartGameInternal {}
 
+/// ## DEPRECATED SINCE 6.0.3 (use `ConnectRequest3` instead)
 pub struct ConnectRequest {}
 
 /// ## ?
@@ -18,21 +24,21 @@ pub struct ConnectRequest {}
 /// send this to disconnect.
 /// Requires the client to reconnect.
 pub struct Disconnect<'a> {
-    id: Packet,
+    enum_type: enums::Packet,
     bot: models::Bot<'a>,
 }
 
 impl<'a> Disconnect<'a> {
     pub fn new(bot: models::Bot) -> Disconnect {
         Disconnect {
-            id: Packet::DISCONNECT,
+            enum_type: enums::Packet::DISCONNECT,
             bot,
         }
     }
 
     pub fn write(&self) -> Vec<u8> {
-        let mut b_arr = models::ByteArray::new(None);
-        b_arr.write_byte(self.id as u8);
+        let mut b_arr = net::ByteArray::new(None);
+        b_arr.write_byte(self.enum_type as u8);
         b_arr.write_int(self.bot.net.cr2_token1.unwrap_or_default());
         b_arr.write_int(self.bot.net.cr2_token2.unwrap_or_default());
         b_arr.write_int(self.bot.net.rng_token1);
@@ -48,22 +54,22 @@ pub struct ClanChatMessage {}
 /// When we have joined a game and
 /// want the bots to start playing.
 pub struct JoinRequest<'a> {
-    id: Packet,
+    enum_type: enums::Packet,
     bot: models::Bot<'a>,
 }
 
 impl<'a> JoinRequest<'a> {
     pub fn new(bot: models::Bot) -> JoinRequest {
         JoinRequest {
-            id: Packet::JOIN_REQUEST,
+            enum_type: enums::Packet::JOIN_REQUEST,
             bot,
         }
     }
 
     pub fn write(&self) -> Vec<u8> {
-        let mut b_arr = models::ByteArray::new(None);
+        let mut b_arr = net::ByteArray::new(None);
         b_arr
-            .write_byte(self.id as u8)
+            .write_byte(self.enum_type as u8)
             .write_short(self.bot.player_data.skin.unwrap_or_default() as u16)
             .write_utf8(self.bot.player_data.name)
             .write_short(0xFF00)
@@ -72,14 +78,14 @@ impl<'a> JoinRequest<'a> {
             .write_raw(&vec![0xFF; self.bot.player_data.name.len()])
             .write_hex("e1d452")
             .write_utf8("")
-            .write_byte(self.bot.player_data.hat.or(Some(0xFF)).unwrap())
+            .write_byte(self.bot.player_data.hat.unwrap_or(0xFF))
             .write_int(0x00000000)
-            .write_byte(self.bot.player_data.halo.unwrap_or_default() as u8) // halo
+            .write_byte(self.bot.player_data.halo.unwrap_or(0x00) as u8) // halo
             .write_byte(0xFF)
             .write_utf8("")
             .write_int(0x00000000)
             .write_int(0x00000000)
-            .write_byte(self.bot.player_data.particle.or(Some(0xFF)).unwrap())
+            .write_byte(self.bot.player_data.particle.unwrap_or(0xFF))
             .write_byte(self.bot.player_data.name_font.unwrap_or_default() as u8)
             .write_byte(0x05)
             .write_byte(self.bot.player_data.rainbow_cycle.unwrap_or_default() as u8)
@@ -93,6 +99,10 @@ impl<'a> JoinRequest<'a> {
     }
 }
 
+/// ## ?
+/// When a player rejoins,
+/// this is the packet received.
+/// Excludes self.
 pub struct JoinResult {}
 
 pub struct TTLRefreshResponseInternal {}
@@ -325,6 +335,82 @@ pub struct AdminInternal8 {}
 
 pub struct PingMessage {}
 
-pub struct ConnectRequest3 {}
+/// ## ?
+/// Used to establish a session
+/// between the client and the server.
+/// Ref: Game's home screen.
+pub struct ConnectRequest3<'a> {
+    enum_type: enums::Packet,
+    bot: &'a models::Bot<'a>,
+    game_mode: enums::GameMode,
+    public_first_connection: bool,
+    mayhem_ticked: bool,
+}
+
+impl<'a> ConnectRequest3<'a> {
+    pub fn new(
+        bot: &'a models::Bot<'a>,
+        game_mode: enums::GameMode,
+        no_public_first_connection: bool,
+        mayhem_ticked: bool,
+    ) -> ConnectRequest3<'a> {
+        ConnectRequest3 {
+            enum_type: enums::Packet::CONNECT_REQUEST_3,
+            bot,
+            game_mode,
+            public_first_connection: no_public_first_connection,
+            mayhem_ticked,
+        }
+    }
+
+    pub fn write(&self) -> Vec<u8> {
+        let rng_crypt_seed = rand::thread_rng().gen::<u64>();
+        let rng_crypt_key = JavaRNG::new(rng_crypt_seed).next_u64();
+
+        let mut b_arr = net::ByteArray::new(None);
+
+        b_arr
+            .write_byte(self.enum_type as u8)
+            .write_int(0x00000000)
+            .write_long(rng_crypt_seed)
+            .write_short(0x04A1)
+            .write_int(self.bot.net.rng_token1)
+            .write_byte(self.game_mode as u8)
+            .write_byte(self.public_first_connection as u8)
+            .write_int(0xFFFFFFFF)
+            .write_utf8(self.bot.player_data.ticket)
+            .write_byte(self.bot.player_data.visibility.unwrap_or_default() as u8)
+            .write_bool(self.mayhem_ticked)
+            .write_short(self.bot.player_data.skin.unwrap_or_default() as u16)
+            .write_byte(self.bot.player_data.eject_skin.unwrap_or(0xFF) as u8)
+            .write_utf8(self.bot.player_data.name)
+            .write_int(0x00000000)
+            .write_byte(self.bot.player_data.name.len() as u8)
+            .write_raw(&vec![0xFF; self.bot.player_data.name.len()])
+            .write_byte(0xFF)
+            .write_int(0xFF828282)
+            .write_utf8("")
+            .write_byte(self.bot.player_data.hat.unwrap_or(0xFF) as u8)
+            .write_int(0x00000000)
+            .write_byte(self.bot.player_data.halo.unwrap_or(0x00))
+            .write_byte(0xFF)
+            .write_utf8("")
+            .write_int(0x00000000)
+            .write_int(0x00000000)
+            .write_byte(self.bot.player_data.particle.unwrap_or(0xFF) as u8)
+            .write_byte(self.bot.player_data.name_font.unwrap_or_default() as u8)
+            .write_byte(0x05)
+            .write_raw(&vec![0x05, 0x77])
+            .write_byte(self.bot.player_data.rainbow_cycle.unwrap_or_default() as u8)
+            .write_short(self.bot.player_data.skin.unwrap_or_default() as u16)
+            .write_short(0x0000)
+            .write_int(0x00000000)
+            .write_long(chrono::Utc::now().timestamp_millis() as u64);
+
+        b_arr = rng_crypt::encrypt(b_arr, rng_crypt_key);
+
+        return b_arr.data;
+    }
+}
 
 pub struct ArenaCDInternal {}
