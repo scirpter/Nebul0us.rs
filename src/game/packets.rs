@@ -44,6 +44,10 @@ impl<'a> ConnectResult2<'a> {
 
 pub struct Control {}
 
+/// ## ?
+/// This packet must be sent periodically,
+/// otherwise the server will disconnect
+/// the client after few seconds.
 pub struct KeepAlive<'a> {
     enum_type: enums::Packet,
     bot: models::Bot<'a>,
@@ -469,7 +473,7 @@ impl<'a> ConnectRequest3<'a> {
             .write_short(self.bot.player_data.skin.unwrap_or_default() as u16)
             .write_short(0x0000)
             .write_int(0x00000000)
-            .write_long(0x6a354d5c6a354d5c);
+            .write_long(chrono::Utc::now().timestamp_millis() as u64);
 
         b_arr = rng_crypt::encrypt(b_arr, rng_crypt_key);
 
