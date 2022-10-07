@@ -402,7 +402,7 @@ pub struct ConnectRequest3<'a> {
     enum_type: enums::Packet,
     bot: &'a models::Bot<'a>,
     game_mode: enums::GameMode,
-    public_first_connection: bool,
+    no_public_first_connection: bool,
     mayhem_ticked: bool,
 }
 
@@ -417,7 +417,7 @@ impl<'a> ConnectRequest3<'a> {
             enum_type: enums::Packet::CONNECT_REQUEST_3,
             bot,
             game_mode,
-            public_first_connection: no_public_first_connection,
+            no_public_first_connection,
             mayhem_ticked,
         }
     }
@@ -440,7 +440,7 @@ impl<'a> ConnectRequest3<'a> {
             .write_short(0x04A1)
             .write_int(self.bot.net.rng_token1)
             .write_byte(self.game_mode as u8)
-            .write_byte(self.public_first_connection as u8)
+            .write_byte(self.no_public_first_connection as u8)
             .write_int(0xFFFFFFFF)
             .write_utf8(self.bot.player_data.ticket)
             .write_byte(self.bot.player_data.visibility.unwrap_or_default() as u8)
