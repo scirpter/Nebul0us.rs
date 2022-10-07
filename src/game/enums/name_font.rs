@@ -1,4 +1,6 @@
+#[derive(Default, Copy, Clone)]
 pub enum NameFont {
+    #[default]
     DEFAULT,
     xxraytid,
     xtrusion,
@@ -21,18 +23,4 @@ pub enum NameFont {
     fire,
     beyno,
     kingthings,
-}
-
-impl Default for NameFont {
-    fn default() -> Self {
-        NameFont::DEFAULT
-    }
-}
-
-impl Copy for NameFont {}
-
-impl Clone for NameFont {
-    fn clone(&self) -> Self {
-        *self
-    }
 }

@@ -58,7 +58,7 @@ impl<'a> Bot<'a> {
             control: Control::default(),
             player_data: PlayerData {
                 name,
-                ticket: ticket.unwrap_or(",-"),
+                ticket: ticket.unwrap_or_default(),
                 ..Default::default()
             },
             net: Net {

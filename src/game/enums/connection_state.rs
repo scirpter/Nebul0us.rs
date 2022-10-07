@@ -1,11 +1,7 @@
+#[derive(Default)]
 pub enum ConnectionState {
+    #[default]
     DISCONNECTED,
     CONNECTING,
     CONNECTED,
-}
-
-impl Default for ConnectionState {
-    fn default() -> Self {
-        ConnectionState::DISCONNECTED
-    }
 }

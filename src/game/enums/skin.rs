@@ -1,4 +1,6 @@
+#[derive(Default, Copy, Clone)]
 pub enum Skin {
+    #[default]
     misc_none,
     misc_8ball,
     misc_circuit,
@@ -1051,18 +1053,4 @@ pub enum Skin {
     tuber_mbb,
     st_maja,
     st_cedric,
-}
-
-impl Default for Skin {
-    fn default() -> Self {
-        Skin::misc_none
-    }
-}
-
-impl Copy for Skin {}
-
-impl Clone for Skin {
-    fn clone(&self) -> Self {
-        *self
-    }
 }

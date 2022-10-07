@@ -1,4 +1,6 @@
+#[derive(Default, Copy, Clone)]
 pub enum ColorCycle {
+    #[default]
     NONE,
     COLOR_CYCLE_SLOW,
     COLOR_CYCLE_FAST,
@@ -6,18 +8,4 @@ pub enum ColorCycle {
     RAINBOW_HORIZONTAL_FAST,
     RAINBOW_VERTICAL_SLOW,
     RAINBOW_VERTICAL_FAST,
-}
-
-impl Default for ColorCycle {
-    fn default() -> Self {
-        ColorCycle::NONE
-    }
-}
-
-impl Copy for ColorCycle {}
-
-impl Clone for ColorCycle {
-    fn clone(&self) -> Self {
-        *self
-    }
 }

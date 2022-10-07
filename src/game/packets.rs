@@ -1,16 +1,74 @@
+use super::rng_crypt;
 use crate::game::enums;
+use crate::utils::pretty_print as print;
 use crate::{models, net};
-use chrono;
-use java_rand::Random as JavaRNG;
 use rand::Rng;
 
-use super::rng_crypt;
+/// ## ?
+/// Received when trying to establish
+/// a connection to the server.
+/// This holds important information like
+/// `cr2_token1` and `cr2_token2`.
+/// Those tokens are used to identify the
+/// client server-side.
+pub struct ConnectResult2<'a> {
+    enum_type: enums::Packet,
+    bot: models::Bot<'a>,
+    data: Vec<u8>,
+}
 
-pub struct ConnectResult2 {}
+impl<'a> ConnectResult2<'a> {
+    pub fn new(bot: models::Bot<'a>, data: Vec<u8>) -> ConnectResult2<'a> {
+        ConnectResult2 {
+            enum_type: enums::Packet::CONNECT_RESULT_2,
+            bot,
+            data,
+        }
+    }
+
+    pub fn parse(&mut self) {
+        let data = self.data.clone();
+        let mut b_arr = net::ByteArray::new(Some(data));
+
+        let packet_id = b_arr.read_byte();
+        let untrue_result = b_arr.read_byte(); // should actually return `enums::ConnectResult`, but it doesn't (random value instead)
+        let e = b_arr.read_int();
+        self.bot.net.cr2_token1 = Some(b_arr.read_int());
+        self.bot.net.cr2_token2 = Some(b_arr.read_int());
+        let g = b_arr.read_int();
+        let read_float = b_arr.read_float();
+
+        self.bot.net.connection_state = Some(enums::ConnectionState::CONNECTED);
+    }
+}
 
 pub struct Control {}
 
-pub struct KeepAlive {}
+pub struct KeepAlive<'a> {
+    enum_type: enums::Packet,
+    bot: models::Bot<'a>,
+}
+
+impl<'a> KeepAlive<'a> {
+    pub fn new(bot: models::Bot) -> KeepAlive {
+        KeepAlive {
+            enum_type: enums::Packet::KEEP_ALIVE,
+            bot,
+        }
+    }
+    pub fn write(&self) -> Vec<u8> {
+        let mut b_arr = net::ByteArray::new(None);
+
+        b_arr
+            .write_byte(self.enum_type as u8)
+            .write_int(self.bot.net.cr2_token1.unwrap_or_default())
+            .write_int(self.bot.net.cr2_token2.unwrap_or_default())
+            .write_int(0xFCF869AC)
+            .write_int(self.bot.net.rng_token1);
+
+        return b_arr.data;
+    }
+}
 
 pub struct InvalidateClient {}
 
@@ -38,10 +96,11 @@ impl<'a> Disconnect<'a> {
 
     pub fn write(&self) -> Vec<u8> {
         let mut b_arr = net::ByteArray::new(None);
-        b_arr.write_byte(self.enum_type as u8);
-        b_arr.write_int(self.bot.net.cr2_token1.unwrap_or_default());
-        b_arr.write_int(self.bot.net.cr2_token2.unwrap_or_default());
-        b_arr.write_int(self.bot.net.rng_token1);
+        b_arr
+            .write_byte(self.enum_type as u8)
+            .write_int(self.bot.net.cr2_token1.unwrap_or_default())
+            .write_int(self.bot.net.cr2_token2.unwrap_or_default())
+            .write_int(self.bot.net.rng_token1);
         return b_arr.data;
     }
 }
@@ -298,11 +357,11 @@ pub struct GroupChatMessage {}
 /// the bot has died.
 pub struct SessionStats<'a> {
     bot: models::Bot<'a>,
-    data: Vec<u8>,
+    data: &'a [u8],
 }
 
 impl<'a> SessionStats<'a> {
-    pub fn new(bot: models::Bot, data: Vec<u8>) -> SessionStats {
+    pub fn new(bot: models::Bot<'a>, data: &'a [u8]) -> SessionStats<'a> {
         SessionStats { bot, data }
     }
 
@@ -363,16 +422,21 @@ impl<'a> ConnectRequest3<'a> {
         }
     }
 
+    /// ## Encryption?
+    /// > The client weakly "encrypts" the packet,
+    ///   probably to stop sniffers from retreiving data
+    ///   more easily. However, this is easily bypassable
+    ///   by just obtaining the "decription" key,
+    ///   located in `.write_long(rng_crypt_key)`.
+    ///   De-/encryption is filed in `./game/rng_crypt.rs`
     pub fn write(&self) -> Vec<u8> {
-        let rng_crypt_seed = rand::thread_rng().gen::<u64>();
-        let rng_crypt_key = JavaRNG::new(rng_crypt_seed).next_u64();
-
+        let rng_crypt_key = rand::thread_rng().gen::<u64>();
         let mut b_arr = net::ByteArray::new(None);
 
         b_arr
             .write_byte(self.enum_type as u8)
             .write_int(0x00000000)
-            .write_long(rng_crypt_seed)
+            .write_long(rng_crypt_key)
             .write_short(0x04A1)
             .write_int(self.bot.net.rng_token1)
             .write_byte(self.game_mode as u8)
@@ -400,12 +464,12 @@ impl<'a> ConnectRequest3<'a> {
             .write_byte(self.bot.player_data.particle.unwrap_or(0xFF) as u8)
             .write_byte(self.bot.player_data.name_font.unwrap_or_default() as u8)
             .write_byte(0x05)
-            .write_raw(&vec![0x05, 0x77])
+            .write_raw(&vec![0x05; 0x77])
             .write_byte(self.bot.player_data.rainbow_cycle.unwrap_or_default() as u8)
             .write_short(self.bot.player_data.skin.unwrap_or_default() as u16)
             .write_short(0x0000)
             .write_int(0x00000000)
-            .write_long(chrono::Utc::now().timestamp_millis() as u64);
+            .write_long(0x6a354d5c6a354d5c);
 
         b_arr = rng_crypt::encrypt(b_arr, rng_crypt_key);
 

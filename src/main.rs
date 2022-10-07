@@ -1,8 +1,6 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-use tokio;
-
 mod game;
 mod interfaces;
 mod models;
@@ -12,13 +10,14 @@ mod utils;
 use game::enums;
 use game::packets;
 use std::net::UdpSocket;
+use tokio;
 use utils::pretty_print as print;
 
 #[tokio::main]
 async fn main() {
     print::clear_console();
 
-    let bot = models::Bot::new("test", None);
+    let bot = models::Bot::new("bot", None);
 
     let cr_packet = packets::ConnectRequest3::new(&bot, enums::GameMode::FFA_ULTRA, false, false);
 
@@ -35,6 +34,16 @@ async fn main() {
         .expect("couldn't send packet");
 
     print::log("NETLOG", "Sent packet to server");
+
+    // receive packet from server
+
+    let mut buf = [0; 1024];
+
+    let (amt, src) = socket.recv_from(&mut buf).expect("couldn't receive packet");
+
+    let mut connect_result_packet = packets::ConnectResult2::new(bot, Vec::from(&buf[..amt]));
+
+    connect_result_packet.parse();
 
     loop {}
 }
