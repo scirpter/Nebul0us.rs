@@ -2,23 +2,23 @@ use colored::Colorize;
 use std::process::Command;
 
 pub fn ok(tag: &str, text: &str) {
-    print!("{} {}", tag.bold().green(), text);
+    print!("{} {}", tag.bold().bright_green(), text);
 }
 
 pub fn error(tag: &str, text: &str) {
-    print!("{} {}", tag.bold().red(), text);
+    print!("{} {}", tag.bold().bright_red(), text);
 }
 
 pub fn log(tag: &str, text: &str) {
-    println!("{} {}", tag.bold().purple(), text);
-}
-
-pub fn low_prio_log(tag: &str, text: &str) {
-    println!("{} {}", tag.bold().blue(), text);
+    println!("{} {}", tag.bold().bright_purple(), text);
 }
 
 pub fn high_prio_log(tag: &str, text: &str) {
     println!("{} {}", tag.bold().bright_magenta(), text.clear());
+}
+
+pub fn wtf(tag: &str, text: &str) {
+    println!("{} {} :?", tag.bold().bright_yellow().dimmed(), text);
 }
 
 pub fn clear_console() {

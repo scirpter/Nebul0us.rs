@@ -11,34 +11,32 @@ use rand::Rng;
 /// `cr2_token1` and `cr2_token2`.
 /// Those tokens are used to identify the
 /// client server-side.
-pub struct ConnectResult2<'a> {
+pub struct ConnectResult2 {
     enum_type: enums::Packet,
-    bot: models::Bot<'a>,
     data: Vec<u8>,
 }
 
-impl<'a> ConnectResult2<'a> {
-    pub fn new(bot: models::Bot<'a>, data: Vec<u8>) -> ConnectResult2<'a> {
+impl ConnectResult2 {
+    pub fn new(data: Vec<u8>) -> Self {
         ConnectResult2 {
             enum_type: enums::Packet::CONNECT_RESULT_2,
-            bot,
             data,
         }
     }
 
-    pub fn parse(&mut self) {
+    pub fn parse(&mut self, bot: &mut models::Bot) {
         let data = self.data.clone();
         let mut b_arr = net::ByteArray::new(Some(data));
 
         let packet_id = b_arr.read_byte();
         let untrue_result = b_arr.read_byte(); // should actually return `enums::ConnectResult`, but it doesn't (random value instead)
         let e = b_arr.read_int();
-        self.bot.net.cr2_token1 = Some(b_arr.read_int());
-        self.bot.net.cr2_token2 = Some(b_arr.read_int());
+        bot.net.cr2_token1 = Some(b_arr.read_int());
+        bot.net.cr2_token2 = Some(b_arr.read_int());
         let g = b_arr.read_int();
         let read_float = b_arr.read_float();
 
-        self.bot.net.connection_state = Some(enums::ConnectionState::CONNECTED);
+        bot.net.connection_state = Some(enums::ConnectionState::CONNECTED);
     }
 }
 
@@ -50,11 +48,11 @@ pub struct Control {}
 /// the client after few seconds.
 pub struct KeepAlive<'a> {
     enum_type: enums::Packet,
-    bot: models::Bot<'a>,
+    bot: &'a mut models::Bot<'a>,
 }
 
 impl<'a> KeepAlive<'a> {
-    pub fn new(bot: models::Bot) -> KeepAlive {
+    pub fn new(bot: &'a mut models::Bot<'a>) -> Self {
         KeepAlive {
             enum_type: enums::Packet::KEEP_ALIVE,
             bot,
@@ -87,11 +85,11 @@ pub struct ConnectRequest {}
 /// Requires the client to reconnect.
 pub struct Disconnect<'a> {
     enum_type: enums::Packet,
-    bot: models::Bot<'a>,
+    bot: &'a mut models::Bot<'a>,
 }
 
 impl<'a> Disconnect<'a> {
-    pub fn new(bot: models::Bot) -> Disconnect {
+    pub fn new(bot: &'a mut models::Bot<'a>) -> Self {
         Disconnect {
             enum_type: enums::Packet::DISCONNECT,
             bot,
@@ -118,11 +116,11 @@ pub struct ClanChatMessage {}
 /// want the bots to start playing.
 pub struct JoinRequest<'a> {
     enum_type: enums::Packet,
-    bot: models::Bot<'a>,
+    bot: &'a mut models::Bot<'a>,
 }
 
 impl<'a> JoinRequest<'a> {
-    pub fn new(bot: models::Bot) -> JoinRequest {
+    pub fn new(bot: &'a mut models::Bot<'a>) -> Self {
         JoinRequest {
             enum_type: enums::Packet::JOIN_REQUEST,
             bot,
@@ -224,7 +222,37 @@ pub struct RemoveGameInternal {}
 
 pub struct GroupLobbyWarn {}
 
-pub struct EnterGameRequest {}
+pub struct EnterGameRequest<'a> {
+    pub player_id: Option<u32>,
+    pub room_name: Option<&'a str>,
+    pub bot: &'a mut models::Bot<'a>,
+}
+
+impl<'a> EnterGameRequest<'a> {
+    pub fn new(
+        bot: &'a mut models::Bot<'a>,
+        player_id: Option<u32>,
+        room_name: Option<&'a str>,
+    ) -> Self {
+        EnterGameRequest {
+            player_id,
+            room_name,
+            bot,
+        }
+    }
+
+    pub fn write(&self) -> Vec<u8> {
+        let mut b_arr = net::ByteArray::new(None);
+        b_arr
+            .write_byte(enums::Packet::ENTER_GAME_REQUEST as u8)
+            .write_int(self.bot.net.cr2_token1.unwrap_or_default())
+            .write_int(self.bot.net.rng_token1)
+            .write_int(0xFFFFFFFF)
+            .write_utf8(self.room_name.unwrap_or_default())
+            .write_int(self.player_id.unwrap_or(0xFFFFFFFF));
+        return b_arr.data;
+    }
+}
 
 pub struct EnterGameResult {}
 
@@ -360,12 +388,12 @@ pub struct GroupChatMessage {}
 /// This is more used to determine whether
 /// the bot has died.
 pub struct SessionStats<'a> {
-    bot: models::Bot<'a>,
+    bot: &'a mut models::Bot<'a>,
     data: &'a [u8],
 }
 
 impl<'a> SessionStats<'a> {
-    pub fn new(bot: models::Bot<'a>, data: &'a [u8]) -> SessionStats<'a> {
+    pub fn new(bot: &'a mut models::Bot<'a>, data: &'a [u8]) -> Self {
         SessionStats { bot, data }
     }
 
@@ -416,7 +444,7 @@ impl<'a> ConnectRequest3<'a> {
         game_mode: enums::GameMode,
         no_public_first_connection: bool,
         mayhem_ticked: bool,
-    ) -> ConnectRequest3<'a> {
+    ) -> Self {
         ConnectRequest3 {
             enum_type: enums::Packet::CONNECT_REQUEST_3,
             bot,

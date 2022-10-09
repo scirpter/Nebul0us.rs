@@ -12,3 +12,4 @@ tokio = {version="1.21.2", features = ["full"]}
 colored = "2.0.0"
 rand = "0.8.5"
 chrono = "0.4.22"
+async-trait = "0.1.57"

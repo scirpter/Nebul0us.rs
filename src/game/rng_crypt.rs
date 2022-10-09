@@ -23,7 +23,7 @@ struct K2 {
 }
 
 impl K2 {
-    fn new(xlength: usize, xrandint: i32) -> K2 {
+    fn new(xlength: usize, xrandint: i32) -> Self {
         K2 { xlength, xrandint }
     }
 }

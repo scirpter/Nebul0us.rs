@@ -11,7 +11,7 @@ pub enum ConnectResult {
 }
 
 impl ConnectResult {
-    pub fn from_u8(value: u8) -> Option<ConnectResult> {
+    pub fn from_u8(value: u8) -> Option<Self> {
         match value {
             0 => Some(ConnectResult::SUCCESS),
             1 => Some(ConnectResult::GAME_NOT_FOUND),
