@@ -1,3 +1,5 @@
+use std::fmt::{Display, Formatter};
+
 pub enum Server {
     US_EAST,
     US_WEST,
@@ -26,6 +28,39 @@ impl Server {
             Server::MIDDLE_EAST => "15.185.65.160",
             Server::SOUTH_AFRICA => "13.245.48.94",
             Server::UNKNOWN => "194.195.115.5",
+        }
+    }
+    pub fn iter() -> Vec<Server> {
+        vec![
+            Server::US_EAST,
+            Server::US_WEST,
+            Server::EUROPE,
+            Server::SOUTH_KOREA,
+            Server::ASIA,
+            Server::SOUTH_AMERICA,
+            Server::AUSTRALIA,
+            Server::JAPAN,
+            Server::MIDDLE_EAST,
+            Server::SOUTH_AFRICA,
+            Server::UNKNOWN,
+        ]
+    }
+}
+
+impl Display for Server {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Server::US_EAST => write!(f, "US East"),
+            Server::US_WEST => write!(f, "US West"),
+            Server::EUROPE => write!(f, "Europe"),
+            Server::SOUTH_KOREA => write!(f, "South Korea"),
+            Server::ASIA => write!(f, "Asia"),
+            Server::SOUTH_AMERICA => write!(f, "South America"),
+            Server::AUSTRALIA => write!(f, "Australia"),
+            Server::JAPAN => write!(f, "Japan"),
+            Server::MIDDLE_EAST => write!(f, "Middle East"),
+            Server::SOUTH_AFRICA => write!(f, "South Africa"),
+            Server::UNKNOWN => write!(f, "Unknown"),
         }
     }
 }

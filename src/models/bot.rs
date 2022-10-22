@@ -1,5 +1,8 @@
-use crate::game::enums;
+use std::sync::mpsc::channel;
+
+use crate::game::{enums, packets};
 use crate::net;
+use crate::utils::pretty_print as print;
 use async_trait::async_trait;
 use rand::Rng;
 
@@ -75,27 +78,51 @@ impl<'a> Bot<'a> {
             },
         }
     }
-}
 
-#[async_trait]
-pub trait UDPClient<'a> {
-    async fn udp_tick<'b>(&'b mut self);
-    async fn setup_sock(&mut self);
-}
-
-#[async_trait]
-impl<'a> UDPClient<'a> for Bot<'a> {
-    async fn udp_tick<'b>(&'b mut self) {
-        // bind to random open port in local machine
+    pub async fn run_udp_tick(&mut self) {
         let mut buf = [0; 1024];
-        let sock = self.net.sock.as_mut().unwrap();
-        let (amt, src) = sock.recv_from(&mut buf).await.unwrap();
-        let packet = buf[..amt].to_vec();
-        net::redirect(self, packet);
+
+        loop {
+            let sock = self.net.sock.as_ref().unwrap();
+            let (amt, src) = sock.recv_from(&mut buf).await.unwrap();
+            let packet = buf[..amt].to_vec();
+
+            net::redirect(self, packet);
+        }
     }
 
-    async fn setup_sock(&mut self) {
+    pub async fn setup_sock(&mut self) {
         let sock = tokio::net::UdpSocket::bind("0.0.0.0:0").await.unwrap();
         self.net.sock = Some(sock);
     }
+}
+
+#[async_trait]
+pub trait BotFunx {
+    async fn connect(&mut self);
+    async fn disconnect(&mut self);
+
+    async fn tick(&mut self);
+}
+
+#[async_trait]
+impl<'a> BotFunx for Bot<'a> {
+    async fn connect(&mut self) {
+        let packet = packets::ConnectRequest3::new(enums::GameMode::FFA_ULTRA, false, false);
+        let data = packet.write(self);
+
+        let sock = self.net.sock.as_mut().unwrap();
+        sock.send_to(&data, (self.net.server_ip, self.net.server_port))
+            .await
+            .unwrap();
+
+        print::log(
+            "Debug",
+            &format!("CONNECT_REQUEST_3 --> {}", self.net.server_ip),
+        );
+    }
+
+    async fn disconnect(&mut self) {}
+
+    async fn tick(&mut self) {}
 }
