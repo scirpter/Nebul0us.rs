@@ -53,12 +53,12 @@ impl GameUpdate {
         if paint_mode_related_event_ct > 0 {
             let mut c = Vec::new();
             let mut d_x = Vec::new();
-            let mut e_x = Vec::new();
+            let mut e_y = Vec::new();
 
             for id in 0..paint_mode_related_event_ct {
                 c[id as usize] = b_arr.read_byte();
                 d_x[id as usize] = OBJ_DATA_RELATIVE(&mut b_arr, 0.0, bot.net.world.raw_size);
-                e_x[id as usize] = OBJ_DATA_RELATIVE(&mut b_arr, 0.0, bot.net.world.raw_size);
+                e_y[id as usize] = OBJ_DATA_RELATIVE(&mut b_arr, 0.0, bot.net.world.raw_size);
             }
         }
 
