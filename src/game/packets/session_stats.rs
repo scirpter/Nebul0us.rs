@@ -1,6 +1,4 @@
-use crate::game::enums;
-use crate::models;
-use crate::net;
+use crate::models::client;
 
 /// ## ?
 /// When the bot dies or a round ends,
@@ -8,16 +6,16 @@ use crate::net;
 /// This is more used to determine whether
 /// the bot has died.
 pub struct SessionStats<'a> {
-    bot: &'a mut models::Bot<'a>,
+    bot: &'a mut client::Bot<'a>,
     data: &'a [u8],
 }
 
 impl<'a> SessionStats<'a> {
-    pub fn new(bot: &'a mut models::Bot<'a>, data: &'a [u8]) -> Self {
+    pub fn new(bot: &'a mut client::Bot<'a>, data: &'a [u8]) -> Self {
         SessionStats { bot, data }
     }
 
-    pub fn parse(&self) {
+    pub async fn parse(&self) {
         todo!("Add bot event handler");
     }
 }

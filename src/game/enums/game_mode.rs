@@ -1,3 +1,6 @@
+use std::fmt::Display;
+
+#[derive(Clone, Copy)]
 pub enum GameMode {
     FFA,
     FFA_TIME,
@@ -47,4 +50,98 @@ pub enum GameMode {
     X20,
     X21,
     MEGA_SPLIT,
+}
+
+impl GameMode {
+    pub fn iter() -> Vec<GameMode> {
+        vec![
+            GameMode::FFA,
+            GameMode::FFA_TIME,
+            GameMode::TEAMS,
+            GameMode::TEAMS_TIME,
+            GameMode::CTF,
+            GameMode::SURVIVAL,
+            GameMode::SOCCER,
+            GameMode::FFA_CLASSIC,
+            GameMode::DOMINATION,
+            GameMode::FFA_ULTRA,
+            GameMode::ZA,
+            GameMode::PAINT,
+            GameMode::TEAM_DEATHMATCH,
+            GameMode::X,
+            GameMode::X2,
+            GameMode::X3,
+            GameMode::X4,
+            GameMode::X5,
+            GameMode::SPLIT_16X,
+            GameMode::X6,
+            GameMode::X7,
+            GameMode::CAMPAIGN,
+            GameMode::ROYALEDUO,
+            GameMode::X8,
+            GameMode::X9,
+            GameMode::X10,
+            GameMode::X11,
+            GameMode::X12,
+            GameMode::X13,
+            GameMode::X14,
+            GameMode::X15,
+            GameMode::X16,
+            GameMode::X17,
+            GameMode::X18,
+            GameMode::X19,
+            GameMode::CRAZY_SPLIT,
+            GameMode::BATTLE_ROYALE,
+            GameMode::X20,
+            GameMode::X21,
+            GameMode::MEGA_SPLIT,
+        ]
+    }
+}
+
+impl Display for GameMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            GameMode::FFA => write!(f, "FFA"),
+            GameMode::FFA_TIME => write!(f, "FFA Time"),
+            GameMode::TEAMS => write!(f, "Teams"),
+            GameMode::TEAMS_TIME => write!(f, "Teams Time"),
+            GameMode::CTF => write!(f, "Capture The Flag"),
+            GameMode::SURVIVAL => write!(f, "Survival"),
+            GameMode::SOCCER => write!(f, "Soccer"),
+            GameMode::FFA_CLASSIC => write!(f, "FFA Classic"),
+            GameMode::DOMINATION => write!(f, "Domination"),
+            GameMode::FFA_ULTRA => write!(f, "FFA Ultra"),
+            GameMode::ZA => write!(f, "Zombie Apocalypse"),
+            GameMode::PAINT => write!(f, "Paint"),
+            GameMode::TEAM_DEATHMATCH => write!(f, "Team Deathmatch"),
+            GameMode::X => write!(f, "X"),
+            GameMode::X2 => write!(f, "X2"),
+            GameMode::X3 => write!(f, "X3"),
+            GameMode::X4 => write!(f, "X4"),
+            GameMode::X5 => write!(f, "X5"),
+            GameMode::SPLIT_16X => write!(f, "Split 16x"),
+            GameMode::X6 => write!(f, "X6"),
+            GameMode::X7 => write!(f, "X7"),
+            GameMode::CAMPAIGN => write!(f, "Campaign"),
+            GameMode::ROYALEDUO => write!(f, "Royal Duo"),
+            GameMode::X8 => write!(f, "X8"),
+            GameMode::X9 => write!(f, "Trick"),
+            GameMode::X10 => write!(f, "Plasma Hunt"),
+            GameMode::X11 => write!(f, "X11"),
+            GameMode::X12 => write!(f, "X12"),
+            GameMode::X13 => write!(f, "X13"),
+            GameMode::X14 => write!(f, "X14"),
+            GameMode::X15 => write!(f, "X15"),
+            GameMode::X16 => write!(f, "X16"),
+            GameMode::X17 => write!(f, "X17"),
+            GameMode::X18 => write!(f, "X18"),
+            GameMode::X19 => write!(f, "X19"),
+            GameMode::CRAZY_SPLIT => write!(f, "Crazy Split"),
+            GameMode::BATTLE_ROYALE => write!(f, "Battle Royale"),
+            GameMode::X20 => write!(f, "X20"),
+            GameMode::X21 => write!(f, "X21"),
+            GameMode::MEGA_SPLIT => write!(f, "Mega Split"),
+        }
+    }
 }

@@ -15,7 +15,7 @@ pub enum Server {
 }
 
 impl Server {
-    pub fn as_str(&self) -> &str {
+    pub fn ip(&self) -> &str {
         match self {
             Server::US_EAST => "45.56.113.95",
             Server::US_WEST => "45.79.69.110",

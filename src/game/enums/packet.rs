@@ -1,3 +1,4 @@
+#[derive(Clone, Copy)]
 pub enum Packet {
     INVALID,
     CONNECT_RESULT_2,

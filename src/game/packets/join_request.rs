@@ -1,5 +1,5 @@
 use crate::game::enums;
-use crate::models;
+use crate::models::client;
 use crate::net;
 
 /// ## ?
@@ -7,11 +7,11 @@ use crate::net;
 /// want the bots to start playing.
 pub struct JoinRequest<'a> {
     pub enum_type: enums::Packet,
-    bot: &'a mut models::Bot<'a>,
+    bot: &'a mut client::Bot<'a>,
 }
 
 impl<'a> JoinRequest<'a> {
-    pub fn new(bot: &'a mut models::Bot<'a>) -> Self {
+    pub fn new(bot: &'a mut client::Bot<'a>) -> Self {
         JoinRequest {
             enum_type: enums::Packet::JOIN_REQUEST,
             bot,
@@ -23,7 +23,7 @@ impl<'a> JoinRequest<'a> {
         b_arr
             .write_byte(self.enum_type as u8)
             .write_short(self.bot.player_data.skin.unwrap_or_default() as u16)
-            .write_utf8(self.bot.player_data.name)
+            .write_utf8(&self.bot.player_data.name)
             .write_short(0xFF00)
             .write_int(self.bot.player_data.name.len() as u32)
             .write_short(0xFFFF)

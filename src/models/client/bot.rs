@@ -1,8 +1,7 @@
-use std::sync::mpsc::channel;
-
-use crate::game::{enums, packets};
+use crate::game::{enums, CONNECT_REQUEST_3, KEEP_ALIVE};
+use crate::models::client::Instruction;
+use crate::models::World;
 use crate::net;
-use crate::utils::pretty_print as print;
 use async_trait::async_trait;
 use rand::Rng;
 
@@ -14,14 +13,14 @@ pub struct Control {
     cached_speed: Option<u8>,
     angle: Option<u16>,
     cached_angle: Option<u16>,
-    eject_count: Option<u32>,
-    split_count: Option<u32>,
-    drop_count: Option<u32>,
+    eject_ct: Option<u32>,
+    split_ct: Option<u32>,
+    drop_ct: Option<u32>,
 }
 
 #[derive(Default)]
 pub struct PlayerData<'a> {
-    pub name: &'a str,
+    pub name: String,
     pub ticket: &'a str,
     pub skin: Option<enums::Skin>,
     pub rainbow_cycle: Option<enums::ColorCycle>,
@@ -34,11 +33,12 @@ pub struct PlayerData<'a> {
 }
 
 #[derive(Default)]
-pub struct Net<'a> {
+pub struct Net {
     pub connection_state: Option<enums::ConnectionState>,
-    pub server_ip: &'a str,
+    pub server_ip: String,
     pub server_port: u16,
     pub sock: Option<tokio::net::UdpSocket>,
+    pub world: World,
 
     // Two tokens received from CONNECT_RESULT_2 (0x01).
     // Used to identify the client server-side.
@@ -53,16 +53,27 @@ pub struct Net<'a> {
 }
 
 pub struct Bot<'a> {
+    pub uniquifier: u8,
+    pub controller_receiver: crossbeam_channel::Receiver<Instruction<'a>>,
+
     pub control: Control,
     pub player_data: PlayerData<'a>,
-    pub net: Net<'a>,
+    pub net: Net,
 }
 
 impl<'a> Bot<'a> {
-    pub fn new(name: &'a str, ticket: Option<&'a str>, server_ip: &'a str) -> Self {
+    pub fn new(
+        bot_uniquifier: u8,
+        controller_receiver: crossbeam_channel::Receiver<Instruction<'a>>,
+        name: String,
+        ticket: Option<&'a str>,
+        server_ip: String,
+    ) -> Self {
         let mut rng = rand::thread_rng();
 
         Bot {
+            uniquifier: bot_uniquifier,
+            controller_receiver,
             control: Control::default(),
             player_data: PlayerData {
                 name,
@@ -74,20 +85,9 @@ impl<'a> Bot<'a> {
                 server_port: rng.gen_range(27900..=27901),
                 rng_token1: rng.gen::<u32>(),
                 rng_token2: rng.gen::<u32>(),
+                world: World::default(),
                 ..Default::default()
             },
-        }
-    }
-
-    pub async fn run_udp_tick(&mut self) {
-        let mut buf = [0; 1024];
-
-        loop {
-            let sock = self.net.sock.as_ref().unwrap();
-            let (amt, src) = sock.recv_from(&mut buf).await.unwrap();
-            let packet = buf[..amt].to_vec();
-
-            net::redirect(self, packet);
         }
     }
 
@@ -99,30 +99,35 @@ impl<'a> Bot<'a> {
 
 #[async_trait]
 pub trait BotFunx {
-    async fn connect(&mut self);
-    async fn disconnect(&mut self);
-
-    async fn tick(&mut self);
+    async fn cheat_loop(&mut self);
 }
 
 #[async_trait]
 impl<'a> BotFunx for Bot<'a> {
-    async fn connect(&mut self) {
-        let packet = packets::ConnectRequest3::new(enums::GameMode::FFA_ULTRA, false, false);
-        let data = packet.write(self);
+    async fn cheat_loop(&mut self) {
+        self.setup_sock().await;
+        CONNECT_REQUEST_3(self).await;
 
-        let sock = self.net.sock.as_mut().unwrap();
-        sock.send_to(&data, (self.net.server_ip, self.net.server_port))
-            .await
-            .unwrap();
+        let mut rand_range = rand::thread_rng().gen_range(2000000..=4000000);
+        let current_timestamp = std::time::Instant::now();
 
-        print::log(
-            "Debug",
-            &format!("CONNECT_REQUEST_3 --> {}", self.net.server_ip),
-        );
+        loop {
+            net::recv_n_redirect(self).await;
+
+            // send keep-alive every 2000000..=4000000 microseconds (2-4 seconds).
+            // we have to keep the time so specific because this
+            // fast af loop has no sleep function
+            if current_timestamp.elapsed().as_micros() % rand_range == 0 {
+                KEEP_ALIVE(self).await;
+                rand_range = rand::thread_rng().gen_range(2000000..=4000000);
+            }
+
+            let received = self.controller_receiver.try_recv();
+
+            if received.is_ok() {
+                let received = received.unwrap();
+                println!("Received: {} as bot {}", received.command, self.uniquifier);
+            }
+        }
     }
-
-    async fn disconnect(&mut self) {}
-
-    async fn tick(&mut self) {}
 }

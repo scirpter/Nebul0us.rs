@@ -1,5 +1,6 @@
 use crate::game::enums;
-use crate::models;
+
+use crate::models::client;
 use crate::net;
 
 /// ## ?
@@ -19,7 +20,7 @@ impl<'a> EnterGameRequest<'a> {
         }
     }
 
-    pub fn write(&self, bot: &mut models::Bot) -> Vec<u8> {
+    pub fn write(&self, bot: &mut client::Bot) -> Vec<u8> {
         let mut b_arr = net::ByteArray::new(None);
         b_arr
             .write_byte(enums::Packet::ENTER_GAME_REQUEST as u8)

@@ -1,5 +1,5 @@
 use crate::game::enums;
-use crate::models;
+use crate::models::client;
 use crate::net;
 
 /// ## ?
@@ -7,12 +7,12 @@ use crate::net;
 /// the public chat.
 pub struct GameChatMessage<'a> {
     pub enum_type: enums::Packet,
-    bot: &'a mut models::Bot<'a>,
+    bot: &'a mut client::Bot<'a>,
     message: Option<&'a str>,
 }
 
 impl<'a> GameChatMessage<'a> {
-    pub fn new(bot: &'a mut models::Bot<'a>, message: Option<&'a str>) -> Self {
+    pub fn new(bot: &'a mut client::Bot<'a>, message: Option<&'a str>) -> Self {
         GameChatMessage {
             enum_type: enums::Packet::GAME_CHAT_MESSAGE,
             bot,
@@ -25,7 +25,7 @@ impl<'a> GameChatMessage<'a> {
         b_arr
             .write_byte(self.enum_type as u8)
             .write_int(self.bot.net.rng_token1)
-            .write_utf8(self.bot.player_data.name)
+            .write_utf8(&self.bot.player_data.name)
             .write_utf8(self.message.unwrap_or("Weebs"))
             .write_int(0xFFFFFFFF)
             .write_long(0x0000000000000000)
@@ -36,7 +36,7 @@ impl<'a> GameChatMessage<'a> {
         return b_arr.data;
     }
 
-    pub fn parse(&mut self, data: Vec<u8>) {
+    pub async fn parse(&mut self, data: Vec<u8>) {
         let mut b_arr = net::ByteArray::new(Some(data));
         let packet_id = b_arr.read_byte();
 

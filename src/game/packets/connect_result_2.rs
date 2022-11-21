@@ -1,5 +1,5 @@
 use crate::game::enums;
-use crate::models;
+use crate::models::client;
 use crate::net;
 
 /// ## ?
@@ -22,7 +22,7 @@ impl ConnectResult2 {
         }
     }
 
-    pub fn parse(&mut self, bot: &mut models::Bot) {
+    pub async fn parse<'b>(&mut self, bot: &mut client::Bot<'b>) {
         let data = self.data.clone();
         let mut b_arr = net::ByteArray::new(Some(data));
 

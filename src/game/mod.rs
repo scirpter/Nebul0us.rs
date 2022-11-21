@@ -56,4 +56,6 @@ pub mod packets {
         spectate_game_request::SpectateGameRequest, top_scores::TopScores,
     };
 }
+mod funx;
+pub use {funx::CONNECT_REQUEST_3, funx::KEEP_ALIVE};
 pub mod rng_crypt;

@@ -1,6 +1,6 @@
 use crate::game::enums;
 use crate::game::rng_crypt;
-use crate::models;
+use crate::models::client;
 use crate::net;
 use rand::Rng;
 
@@ -36,7 +36,7 @@ impl ConnectRequest3 {
     ///   by just obtaining the "decription" key,
     ///   located in `.write_long(rng_crypt_key)`.
     ///   De-/encryption is filed in `./game/rng_crypt.rs`
-    pub fn write(&self, bot: &mut models::Bot) -> Vec<u8> {
+    pub fn write(&self, bot: &mut client::Bot) -> Vec<u8> {
         let rng_crypt_key = rand::thread_rng().gen::<u64>();
         let mut b_arr = net::ByteArray::new(None);
 
@@ -54,7 +54,7 @@ impl ConnectRequest3 {
             .write_bool(self.mayhem_ticked)
             .write_short(bot.player_data.skin.unwrap_or_default() as u16)
             .write_byte(bot.player_data.eject_skin.unwrap_or(0xFF) as u8)
-            .write_utf8(bot.player_data.name)
+            .write_utf8(&bot.player_data.name)
             .write_int(0x00000000)
             .write_byte(bot.player_data.name.len() as u8)
             .write_raw(&vec![0xFF; bot.player_data.name.len()])
