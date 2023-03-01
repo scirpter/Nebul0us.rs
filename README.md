@@ -1,2 +1,2 @@
-# Nebul0us-Enhanced
+# Nebul0us
 Networked Nebulous.io cheat
